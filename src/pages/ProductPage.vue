@@ -42,28 +42,14 @@
             <fieldset class="form__block">
               <legend class="form__legend">Цвет:</legend>
               <ul class="colors">
-                <li class="colors__item">
+                <li class="colors__item" v-for="color in product.colors" :key="color.name">
                   <label class="colors__label">
-                    <input class="colors__radio sr-only" type="radio" name="color-item"
-                    value="blue" checked="">
-                    <span class="colors__value" style="background-color: #73B6EA;">
+                    <input v-model="currentColor" class="colors__radio sr-only"
+                    type="radio" name="color-item"
+                    :value="color.color" checked="">
+                    <span class="colors__value" :style="{'background-color': color.color}">
                     </span>
                   </label>
-                </li>
-                <li class="colors__item">
-                  <label class="colors__label">
-                    <input class="colors__radio sr-only" type="radio"
-                    name="color-item" value="yellow">
-                    <span class="colors__value" style="background-color: #FFBE15;">
-                    </span>
-                  </label>
-                </li>
-                <li class="colors__item">
-                  <label class="colors__label">
-                    <input class="colors__radio sr-only" type="radio"
-                    name="color-item" value="gray">
-                    <span class="colors__value" style="background-color: #939393;">
-                  </span></label>
                 </li>
               </ul>
             </fieldset>
@@ -101,23 +87,8 @@
             </fieldset>
 
             <div class="item__row">
-              <div class="form__counter">
-                <button @click.prevent="decrementProduct(productAmount)"
-                 type="button" aria-label="Убрать один товар">
-                  <svg width="12" height="12" fill="currentColor">
-                    <use xlink:href="#icon-minus"></use>
-                  </svg>
-                </button>
 
-                <input type="text" v-model.number="productAmount" name="count">
-
-                <button @click.prevent="incrementProduct(productAmount)"
-                   type="button" aria-label="Добавить один товар">
-                  <svg width="12" height="12" fill="currentColor">
-                    <use xlink:href="#icon-plus"></use>
-                  </svg>
-                </button>
-              </div>
+                <ProductCounter v-model:productId="product.id" v-model:amount="productAmount"/>
 
               <button class="button button--primery"  type="submit">
                 В корзину
@@ -198,15 +169,22 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex';
 import products from '@/data/products';
 import categories from '@/data/categories';
 import numberFormat from '@/helpers/numberFormat';
+
+import ProductCounter from '@/components/ProductCounter.vue';
 
 export default {
   data() {
     return {
       productAmount: 1,
+      currentColor: this.$route.params.color,
     };
+  },
+  components: {
+    ProductCounter,
   },
   computed: {
     product() {
@@ -221,21 +199,15 @@ export default {
   },
   methods: {
     numberFormat,
+    ...mapMutations({
+      // incrementProduct: 'increaseProductAmount',
+      // decrementAmount: 'reduceProductAmount',
+    }),
     addToCart() {
       if (this.productAmount < 1) {
         return;
       }
-      this.$store.commit('addProductToCart', { productID: this.product.id, amount: this.productAmount });
-    },
-
-    incrementProduct(value) {
-      this.productAmount = value + 1;
-    },
-    decrementProduct(value) {
-      if (!value) {
-        return;
-      }
-      this.productAmount = value - 1;
+      this.$store.commit('addProductToCart', { productID: this.product.id, amount: this.productAmount, color: this.currentColor });
     },
   },
 

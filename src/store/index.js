@@ -8,9 +8,10 @@ export default createStore({
     ],
   },
   mutations: {
-    addProductToCart(state, { productID, amount }) {
+    addProductToCart(state, { productID, amount, color }) {
       const item = state.cartProducts
-        .find((searchingItem) => searchingItem.productID === productID);
+        // eslint-disable-next-line max-len
+        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
 
       if (item) {
         item.amount += amount;
@@ -18,34 +19,40 @@ export default createStore({
         state.cartProducts.push({
           productID,
           amount,
+          color,
         });
       }
     },
-    updateProductCartAmount(state, { productID, amount }) {
+    updateProductCartAmount(state, { productID, amount, color }) {
       const item = state.cartProducts
-        .find((searchingItem) => searchingItem.productID === productID);
+        // eslint-disable-next-line max-len
+        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
       if (item) {
         item.amount = amount;
       }
     },
-    deleteProductFromCart(state, productID) {
+    deleteProductFromCart(state, { productID, color }) {
       const item = state.cartProducts
-        .find((searchingItem) => searchingItem.productID === productID);
+        // eslint-disable-next-line max-len
+        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
+      console.log(1);
       if (item) {
         state.cartProducts = state.cartProducts
-          .filter((product) => product.productID !== item.productID);
+          .filter((product) => product !== item);
       }
     },
-    reduceProductAmount(state, productID) {
+    reduceProductAmount(state, { productID, color }) {
       const item = state.cartProducts
-        .find((searchingItem) => searchingItem.productID === productID);
+        // eslint-disable-next-line max-len
+        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
       if (item && item.amount !== 1) {
         item.amount -= 1;
       }
     },
-    increaseProductAmount(state, productID) {
+    increaseProductAmount(state, { productID, color }) {
       const item = state.cartProducts
-        .find((searchingItem) => searchingItem.productID === productID);
+        // eslint-disable-next-line max-len
+        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
       if (item) {
         item.amount += 1;
       }

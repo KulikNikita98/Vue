@@ -1,24 +1,25 @@
 <template>
   <main class="content container">
     <div class="content__top content__top--catalog">
-      <h1 class="content__title">
-        Каталог
-      </h1>
-      <span class="content__info">
-        152 товара
-      </span>
+      <h1 class="content__title">Каталог</h1>
+      <span class="content__info"> 152 товара </span>
     </div>
 
     <div class="content__catalog">
-      <ProductFilter v-model:category="filterCategoryId" v-model:priceFrom="filterPriceFrom"
-      v-model:priceTo="filterPriceTo" v-model:currentColor="color" />
+      <ProductFilter
+        v-model:category="filterCategoryId"
+        v-model:priceFrom="filterPriceFrom"
+        v-model:priceTo="filterPriceTo"
+        v-model:currentColor="color"
+      />
       <section class="catalog">
-        <ProductList :products="products"
-         />
-        <AppPagination v-model:page="page" :perPage="productsPerPage"
-        :count="count" />
+        <ProductList :products="products" />
+        <AppPagination
+          v-model:page="page"
+          :perPage="productsPerPage"
+          :count="count"
+        />
       </section>
-
     </div>
   </main>
 </template>
@@ -50,28 +51,37 @@ export default {
     filteredProducts() {
       let filteredProducts = products;
       if (this.filterPriceFrom > 0) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.price > this.filterPriceFrom);
+        filteredProducts = filteredProducts.filter(
+          (product) => product.price > this.filterPriceFrom,
+        );
       }
       if (this.filterPriceTo > 0) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.price < this.filterPriceTo);
+        filteredProducts = filteredProducts.filter(
+          (product) => product.price < this.filterPriceTo,
+        );
       }
       if (this.filterCategoryId) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.categoryID === this.filterCategoryId);
+        filteredProducts = filteredProducts.filter(
+          (product) => product.categoryID === this.filterCategoryId,
+        );
       }
       if (this.color) {
-        filteredProducts = filteredProducts
-          .filter((product) => product.colors.find((color) => color === this.color));
+        filteredProducts = filteredProducts.filter((product) => product.colors.find((color) => {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const value of Object.values(color)) {
+            if (value === this.color) {
+              return true;
+            }
+          }
+          return false;
+        }));
       }
 
       return filteredProducts;
     },
     products() {
       const offset = (this.page - 1) * this.productsPerPage;
-      return this.filteredProducts
-        .slice(offset, offset + this.productsPerPage);
+      return this.filteredProducts.slice(offset, offset + this.productsPerPage);
     },
     count() {
       return this.filteredProducts.length;

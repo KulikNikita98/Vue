@@ -205,15 +205,6 @@ export default {
     },
   },
   computed: {
-    // currentPriceFrom: {
-    //   get() {
-    //     return this.priceFrom;
-    //   },
-
-    //   set(value) {
-    //     this.$emit('update:priceFrom', value);
-    //   },
-    // },
     categories() {
       return categories;
     },

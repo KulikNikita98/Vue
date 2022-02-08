@@ -13,23 +13,7 @@
     </h3>
     <span class="product__code"> Артикул: {{ item.productID }} </span>
 
-    <div class="product__counter form__counter">
-      <button @click.prevent="decrementAmount(this.item.productID)"
-       type="button" aria-label="Убрать один товар">
-        <svg width="10" height="10" fill="currentColor">
-          <use xlink:href="#icon-minus"></use>
-        </svg>
-      </button>
-
-      <input type="text" v-model.number="amount" name="count" />
-
-      <button @click.prevent="incrementAmount(this.item.productID)"
-       type="button" aria-label="Добавить один товар">
-        <svg width="10" height="10" fill="currentColor">
-          <use xlink:href="#icon-plus"></use>
-        </svg>
-      </button>
-    </div>
+    <ProductCounter v-model:productId="productID" v-model:amount="amount"/>
 
     <b class="product__price">
       {{ numberFormat(item.product.price * item.amount) }} ₽
@@ -38,7 +22,7 @@
     <button
       class="product__del button-del"
       type="button"
-      @click.prevent="deleteCartProduct(this.item.productID);"
+      @click.prevent="deleteCartProduct({productID: this.item.productID, color: this.item.color});"
       aria-label="Удалить товар из корзины"
     >
       <svg width="20" height="20" fill="currentColor">
@@ -51,20 +35,23 @@
 <script>
 import { mapMutations } from 'vuex';
 import numberFormat from '@/helpers/numberFormat';
+import ProductCounter from '@/components/ProductCounter.vue';
 
 export default {
   props: ['item'],
   data() {
     return {
       currentAmount: this.item.amount,
+      currentItemId: this.item.productID,
     };
+  },
+  components: {
+    ProductCounter,
   },
   methods: {
     numberFormat,
     ...mapMutations({
       deleteCartProduct: 'deleteProductFromCart',
-      decrementAmount: 'reduceProductAmount',
-      incrementAmount: 'increaseProductAmount',
     }),
   },
   watch: {
@@ -78,7 +65,12 @@ export default {
         return this.currentAmount;
       },
       set(value) {
-        return this.$store.commit('updateProductCartAmount', { productID: this.item.productID, amount: value });
+        return this.$store.commit('updateProductCartAmount', { productID: this.item.productID, amount: value, color: this.item.color });
+      },
+    },
+    productID: {
+      get() {
+        return this.currentAmount;
       },
     },
   },
