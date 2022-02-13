@@ -1,5 +1,8 @@
 <template>
-  <main class="content container">
+    <main class="content container"
+    v-if="isProductLoading">Подождите, идет загрузка товара...</main>
+    <main class="content container" v-else-if="isLoadingFailed">Не удалось загрузить товар</main>
+  <main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -9,7 +12,7 @@
         </li>
         <li class="breadcrumbs__item">
           <router-link class="breadcrumbs__link" :to="{name: 'main'}">
-            {{category.title}}
+            {{product.category.title}}
           </router-link>
         </li>
         <li class="breadcrumbs__item">
@@ -42,12 +45,12 @@
             <fieldset class="form__block">
               <legend class="form__legend">Цвет:</legend>
               <ul class="colors">
-                <li class="colors__item" v-for="color in product.colors" :key="color.name">
+                <li class="colors__item" v-for="color in product.colors" :key="color.id">
                   <label class="colors__label">
                     <input v-model="currentColor" class="colors__radio sr-only"
                     type="radio" name="color-item"
-                    :value="color.color" checked="">
-                    <span class="colors__value" :style="{'background-color': color.color}">
+                    :value="color.title" checked="">
+                    <span class="colors__value" :style="{'background-color': color.code}">
                     </span>
                   </label>
                 </li>
@@ -93,6 +96,8 @@
               <button class="button button--primery"  type="submit">
                 В корзину
               </button>
+              <div v-show="isProductAdded">Товар успешно добавлен в корзину</div>
+              <div v-show="isProductAdding">Отправка товара в корзину</div>
             </div>
           </form>
         </div>
@@ -169,9 +174,9 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
-import products from '@/data/products';
-import categories from '@/data/categories';
+import axios from 'axios';
+import { mapActions } from 'vuex';
+import { API_BASE_URL } from '@/config';
 import numberFormat from '@/helpers/numberFormat';
 
 import ProductCounter from '@/components/ProductCounter.vue';
@@ -181,6 +186,11 @@ export default {
     return {
       productAmount: 1,
       currentColor: this.$route.params.color,
+      productsData: null,
+      isLoadingFailed: false,
+      isProductLoading: false,
+      isProductAdded: false,
+      isProductAdding: false,
     };
   },
   components: {
@@ -188,26 +198,51 @@ export default {
   },
   computed: {
     product() {
-      return products.find((product) => product.id === +this.$route.params.id);
-    },
-    category() {
-      return categories.find((category) => this.product.categoryID === category.id);
+      return this.productsData ? {
+        ...this.productsData,
+        img: this.productsData.image.file.url,
+      } : {};
     },
     formattedNumber() {
       return numberFormat(this.product.price);
     },
   },
   methods: {
+    ...mapActions(['addProductToCart']),
     numberFormat,
-    ...mapMutations({
-      // incrementProduct: 'increaseProductAmount',
-      // decrementAmount: 'reduceProductAmount',
-    }),
     addToCart() {
+      this.isProductAdded = false;
+      this.isProductAdding = true;
       if (this.productAmount < 1) {
         return;
       }
-      this.$store.commit('addProductToCart', { productID: this.product.id, amount: this.productAmount, color: this.currentColor });
+      this.addProductToCart(
+        { productID: this.product.id, amount: this.productAmount },
+      )
+        .then(() => {
+          this.isProductAdded = true;
+          this.isProductAdding = false;
+        });
+    },
+    loadProduct() {
+      this.isLoadingFailed = false;
+      this.isProductLoading = true;
+      axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
+        // eslint-disable-next-line no-return-assign
+        .then((response) => this.productsData = response.data)
+        // eslint-disable-next-line no-return-assign
+        .catch(() => this.isLoadingFailed = true)
+        // eslint-disable-next-line no-return-assign
+        .then(() => this.isProductLoading = false);
+    },
+  },
+
+  watch: {
+    '$route.params.id': {
+      handler() {
+        this.loadProduct();
+      },
+      immediate: true,
     },
   },
 

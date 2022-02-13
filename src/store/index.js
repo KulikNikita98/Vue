@@ -1,69 +1,75 @@
+import axios from 'axios';
 import { createStore } from 'vuex';
-import products from '@/data/products';
+import { API_BASE_URL } from '@/config';
 
 export default createStore({
   state: {
     cartProducts: [
 
     ],
+    cartAccessKey: null,
+    cartProductsData: [],
   },
   mutations: {
-    addProductToCart(state, { productID, amount, color }) {
+    updateProductCartAmount(state, { productID, amount }) {
       const item = state.cartProducts
         // eslint-disable-next-line max-len
-        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
-
-      if (item) {
-        item.amount += amount;
-      } else {
-        state.cartProducts.push({
-          productID,
-          amount,
-          color,
-        });
-      }
-    },
-    updateProductCartAmount(state, { productID, amount, color }) {
-      const item = state.cartProducts
-        // eslint-disable-next-line max-len
-        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
+        .find((searchingItem) => (searchingItem.productID === productID));
       if (item) {
         item.amount = amount;
       }
     },
-    deleteProductFromCart(state, { productID, color }) {
+    deleteProductFromCart(state, { productID }) {
       const item = state.cartProducts
         // eslint-disable-next-line max-len
-        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
+        .find((searchingItem) => searchingItem.productID === productID);
       console.log(1);
       if (item) {
         state.cartProducts = state.cartProducts
           .filter((product) => product !== item);
       }
     },
-    reduceProductAmount(state, { productID, color }) {
+    reduceProductAmount(state, { productID }) {
       const item = state.cartProducts
         // eslint-disable-next-line max-len
-        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
+        .find((searchingItem) => searchingItem.productID === productID);
       if (item && item.amount !== 1) {
         item.amount -= 1;
       }
     },
-    increaseProductAmount(state, { productID, color }) {
+    increaseProductAmount(state, { productID }) {
       const item = state.cartProducts
         // eslint-disable-next-line max-len
-        .find((searchingItem) => (searchingItem.productID === productID && searchingItem.color === color));
+        .find((searchingItem) => searchingItem.productID === productID);
       if (item) {
         item.amount += 1;
       }
     },
+    updateAccessKey(state, accessKey) {
+      state.cartAccessKey = accessKey;
+    },
+    updateCartProductsData(state, productsData) {
+      state.cartProductsData = productsData;
+    },
+    syncCartProducts(state) {
+      state.cartProducts = state.cartProductsData.map((item) => ({
+        productID: item.product.id,
+        amount: item.quantity,
+      }));
+    },
   },
   getters: {
     CartDetailedProducts(state) {
-      return state.cartProducts.map((item) => ({
-        ...item,
-        product: products.find((product) => product.id === item.productID),
-      }));
+      return state.cartProducts.map((item) => {
+        const { product } = state.cartProductsData.find((p) => item.productID === p.product.id);
+        return {
+          ...item,
+          product: {
+            ...product,
+            img: product.image.file.url,
+          },
+        };
+      });
     },
     CartTotalPrice(state, getters) {
       return getters.CartDetailedProducts
@@ -75,7 +81,56 @@ export default createStore({
     },
   },
   actions: {
+    async loadCart(context) {
+      return axios.get(`${API_BASE_URL}/api/baskets`, {
+        params: {
+          userAccessKey: context.state.cartAccessKey,
+        },
+      })
+        .then((response) => {
+          if (!context.state.cartAccessKey) {
+            localStorage.setItem('userAccessKey', response.data.user.accessKey);
+            context.commit('updateAccessKey', response.data.user.accessKey);
+          }
+          context.commit('updateCartProductsData', response.data.items);
+          context.commit('syncCartProducts');
+        });
+    },
+    async addProductToCart(context, { productID, amount }) {
+      return axios.post(`${API_BASE_URL}/api/baskets/products`, {
+        productId: productID,
+        quantity: amount,
+        params: {
+          userAccessKey: context.state.cartAccessKey,
+        },
+      })
+        .then((response) => {
+          context.commit('updateCartProductsData', response.data.items);
+          context.commit('syncCartProducts');
+        });
+    },
+    async updateCartProductAmount(context, { productID, amount }) {
+      context.commit('updateProductCartAmount', { productID, amount });
+      if (amount < 1) {
+        return;
+      }
+      // eslint-disable-next-line consistent-return
+      return axios.put(`${API_BASE_URL}/api/baskets/products`, {
+        productId: productID,
+        quantity: amount,
+        params: {
+          userAccessKey: context.state.cartAccessKey,
+        },
+      })
+        .then((response) => {
+          context.commit('updateCartProductsData', response.data.items);
+        })
+        .catch(() => {
+          context.commit('syncCartProducts');
+        });
+    },
   },
+
   modules: {
   },
 });
