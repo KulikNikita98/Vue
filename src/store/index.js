@@ -100,6 +100,8 @@ export default createStore({
       return axios.post(`${API_BASE_URL}/api/baskets/products`, {
         productId: productID,
         quantity: amount,
+      },
+      {
         params: {
           userAccessKey: context.state.cartAccessKey,
         },
@@ -118,6 +120,8 @@ export default createStore({
       return axios.put(`${API_BASE_URL}/api/baskets/products`, {
         productId: productID,
         quantity: amount,
+      },
+      {
         params: {
           userAccessKey: context.state.cartAccessKey,
         },
