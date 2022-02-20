@@ -20,10 +20,11 @@ export default createStore({
       }
     },
     deleteProductFromCart(state, { productID }) {
+      console.log(productID);
       const item = state.cartProducts
         // eslint-disable-next-line max-len
         .find((searchingItem) => searchingItem.productID === productID);
-      console.log(1);
+
       if (item) {
         state.cartProducts = state.cartProducts
           .filter((product) => product !== item);
@@ -108,6 +109,23 @@ export default createStore({
       })
         .then((response) => {
           context.commit('updateCartProductsData', response.data.items);
+          context.commit('syncCartProducts');
+        });
+    },
+    async deleteCartProduct(context, { productID }) {
+      context.commit('deleteProductFromCart', { productID });
+      return axios.delete(`${API_BASE_URL}/api/baskets/products`, {
+        productId: productID,
+      },
+      {
+        params: {
+          userAccessKey: context.state.cartAccessKey,
+        },
+      })
+        .then((response) => {
+          context.commit('updateCartProductsData', response.data.items);
+        })
+        .catch(() => {
           context.commit('syncCartProducts');
         });
     },

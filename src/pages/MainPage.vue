@@ -10,14 +10,15 @@
         v-model:category="filterCategoryId"
         v-model:priceFrom="filterPriceFrom"
         v-model:priceTo="filterPriceTo"
-        v-model:currentColor="color"
+        :colors="colors"
+        v-model:colorId="filterColorId"
       />
       <section class="catalog">
         <div v-if="isProductsLoading">Подождите, идет загрузка товаров...</div>
         <div v-if="isProductsLoadingFailed">Произошла ошибка при загрузке товаров :(
-          <button @click.prevent="loadProducts()">Попробовать еще раз</button>
+          <button  @click.prevent="loadProducts()">Попробовать еще раз</button>
         </div>
-        <ProductList  :products="products" />
+        <ProductList v-if="isProductsLoaded"  :products="products" />
         <AppPagination
           v-model:page="page"
           :perPage="productsPerPage"
@@ -46,17 +47,22 @@ export default {
       filterPriceFrom: 0,
       filterPriceTo: 0,
       filterCategoryId: 0,
-      color: '#73B6EA',
+      filterColorId: null,
       page: 1,
       productsPerPage: 3,
+      colorsData: null,
       productsData: null,
       isProductsLoading: false,
       isProductsLoadingFailed: false,
+      isProductsLoaded: false,
     };
   },
 
   computed: {
-
+    colors() {
+      return this.colorsData ? this.colorsData
+        .filter((color) => color.id <= this.colorsData.length) : [];
+    },
     products() {
       return this.productsData
         ? this.productsData.items.map((product) => ({
@@ -70,10 +76,21 @@ export default {
     },
   },
   methods: {
+    async loadColors() {
+      clearTimeout(this.colorLoadTimer);
+      this.colorLoadTimer = setTimeout(
+        () => {
+          axios.get(`${API_BASE_URL}/api/colors`)
+          // eslint-disable-next-line no-return-assign
+            .then((response) => this.colorsData = response.data.items);
+        }, 0,
+      );
+    },
     async loadProducts() {
       clearTimeout(this.loadingProductsTimer);
       this.isProductsLoading = true;
       this.isProductsLoadingFailed = false;
+      this.isProductsLoaded = false;
       this.loadingProductsTimer = setTimeout(() => {
         axios
           .get(`${API_BASE_URL}/api/products`, {
@@ -83,6 +100,7 @@ export default {
               categoryId: this.filterCategoryId,
               minPrice: this.filterPriceFrom,
               maxPrice: this.filterPriceTo,
+              colorId: this.filterColorId,
             },
           })
           // eslint-disable-next-line no-return-assign
@@ -90,7 +108,10 @@ export default {
           // eslint-disable-next-line no-return-assign
           .catch(() => this.isProductsLoadingFailed = true)
           // eslint-disable-next-line no-return-assign
-          .then(() => this.isProductsLoading = false);
+          .then(() => {
+            this.isProductsLoading = false;
+            this.isProductsLoaded = true;
+          });
       }, 5000);
     },
   },
@@ -107,9 +128,13 @@ export default {
     filterPriceTo() {
       this.loadProducts();
     },
+    filterColorId() {
+      this.loadProducts();
+    },
   },
   created() {
     this.loadProducts(this.page, this.productsPerPage);
+    this.loadColors();
   },
 };
 </script>

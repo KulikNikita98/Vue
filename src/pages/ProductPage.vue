@@ -49,40 +49,8 @@
                   <label class="colors__label">
                     <input v-model="currentColor" class="colors__radio sr-only"
                     type="radio" name="color-item"
-                    :value="color.title" checked="">
+                    :value="color.code" :checked="currentColor === color.code">
                     <span class="colors__value" :style="{'background-color': color.code}">
-                    </span>
-                  </label>
-                </li>
-              </ul>
-            </fieldset>
-
-            <fieldset class="form__block">
-              <legend class="form__legend">Объемб в ГБ:</legend>
-
-              <ul class="sizes sizes--primery">
-                <li class="sizes__item">
-                  <label class="sizes__label">
-                    <input class="sizes__radio sr-only" type="radio" name="sizes-item" value="32">
-                    <span class="sizes__value">
-                      32gb
-                    </span>
-                  </label>
-                </li>
-                <li class="sizes__item">
-                  <label class="sizes__label">
-                    <input class="sizes__radio sr-only" type="radio" name="sizes-item" value="64">
-                    <span class="sizes__value">
-                      64gb
-                    </span>
-                  </label>
-                </li>
-                <li class="sizes__item">
-                  <label class="sizes__label">
-                    <input class="sizes__radio sr-only" type="radio"
-                    name="sizes-item" value="128" checked="">
-                    <span class="sizes__value">
-                      128gb
                     </span>
                   </label>
                 </li>
