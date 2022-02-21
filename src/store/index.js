@@ -114,14 +114,15 @@ export default createStore({
     },
     async deleteCartProduct(context, { productID }) {
       context.commit('deleteProductFromCart', { productID });
-      return axios.delete(`${API_BASE_URL}/api/baskets/products`, {
-        productId: productID,
-      },
-      {
-        params: {
-          userAccessKey: context.state.cartAccessKey,
-        },
-      })
+      return axios.delete(`${API_BASE_URL}/api/baskets/products`,
+        {
+          params: {
+            userAccessKey: context.state.cartAccessKey,
+          },
+          data: {
+            productId: productID,
+          },
+        })
         .then((response) => {
           context.commit('updateCartProductsData', response.data.items);
         })
