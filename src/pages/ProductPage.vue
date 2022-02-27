@@ -208,6 +208,9 @@ export default {
   watch: {
     '$route.params.id': {
       handler() {
+        if (!this.$route.params.id) {
+          return;
+        }
         this.loadProduct();
       },
       immediate: true,
