@@ -5,6 +5,7 @@ import ProductPage from '@/pages/ProductPage.vue';
 import NotFoundPage from '@/pages/NotFoundPage.vue';
 import ProductCart from '@/pages/ProductCart.vue';
 import OrderPage from '@/pages/OrderPage.vue';
+import OrderInfoPage from '@/pages/OrderInfoPage.vue';
 
 const routes = [
 
@@ -28,6 +29,12 @@ const routes = [
     name: 'order',
     component: OrderPage,
     path: '/order',
+  },
+
+  {
+    name: 'orderInfo',
+    component: OrderInfoPage,
+    path: '/order/:id',
   },
 
   {

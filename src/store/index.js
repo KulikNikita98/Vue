@@ -9,8 +9,16 @@ export default createStore({
     ],
     cartAccessKey: null,
     cartProductsData: [],
+    orderInfo: null,
   },
   mutations: {
+    setOrderInfo(state, orderInfo) {
+      state.orderInfo = orderInfo;
+    },
+    resetCart(state) {
+      state.cartProducts = [];
+      state.cartProductsData = [];
+    },
     updateProductCartAmount(state, { productID, amount }) {
       const item = state.cartProducts
         // eslint-disable-next-line max-len

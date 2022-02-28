@@ -28,7 +28,7 @@
     </div>
 
     <section class="cart">
-      <form class="cart__form form" action="#" method="POST">
+      <form class="cart__form form" action="#" method="POST" @submit.prevent="sendOrder">
         <div class="cart__field">
           <div class="cart__data">
 
@@ -45,9 +45,9 @@
             <BaseFormText title="Email" name="email" type="email" :error="formError.email"
             placeholder="Введи ваш Email" v-model:value="formData.email"/>
 
-            <BaseFormTextarea title="Комментарий к заказу" name="comments"
-            :error="formError.comments"
-            placeholder="Ваши пожелания" v-model:value="formData.comments"/>
+            <BaseFormTextarea title="Комментарий к заказу" name="comment"
+            :error="formError.comment"
+            placeholder="Ваши пожелания" v-model:value="formData.comment"/>
 
           </div>
 
@@ -111,11 +111,12 @@
             товара на сумму <b> {{numberFormat(totalPrice) }} ₽</b></p>
           </div>
 
-          <button class="cart__button button button--primery" type="submit">
+          <button
+          class="cart__button button button--primery" type="submit">
             Оформить заказ
           </button>
         </div>
-        <div class="cart__error form__error-block">
+        <div v-if="formErrorMessage" class="cart__error form__error-block">
           <h4>Заявка не отправлена!</h4>
           <p>
             Похоже произошла ошибка. Попробуйте отправить снова или перезагрузите страницу.
@@ -128,16 +129,19 @@
 
 <script>
 
+import axios from 'axios';
 import { mapGetters, mapActions } from 'vuex';
 import numberFormat from '@/helpers/numberFormat';
 import BaseFormText from '@/components/BaseFormText.vue';
 import BaseFormTextarea from '@/components/BaseFormTextarea.vue';
+import { API_BASE_URL } from '@/config';
 
 export default {
   data() {
     return {
       formData: { },
       formError: { },
+      formErrorMessage: '',
     };
   },
   components: {
@@ -156,6 +160,27 @@ export default {
       loadCartProducts: 'loadCart',
     }),
     numberFormat,
+    sendOrder() {
+      this.formError = {};
+      this.formErrorMessage = '';
+      axios.post(`${API_BASE_URL}/api/orders`, {
+        ...this.formData,
+      }, {
+        params: {
+          userAccessKey: this.$store.state.cartAccessKey,
+        },
+      })
+        .then((response) => {
+          this.$store.commit('resetCart');
+          this.formData = {};
+          this.$store.commit('setOrderInfo', response.data);
+          this.$router.push({ name: 'orderInfo', params: { id: response.data.id } });
+        })
+        .catch((error) => {
+          this.formError = error.response.data.error.request || {};
+          this.formErrorMessage = error.response.data.error;
+        });
+    },
   },
   created() {
     this.loadCartProducts();
