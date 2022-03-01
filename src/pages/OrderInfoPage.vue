@@ -17,7 +17,8 @@
         </li>
       </ul>
 
-      <h1 class="content__title">Заказ оформлен <span>№ 23621</span></h1>
+      <h1 class="content__title">Заказ оформлен
+        <span>№ {{ customerData.id }}</span></h1>
     </div>
 
     <section class="cart">
@@ -30,55 +31,24 @@
           </p>
 
           <ul class="dictionary">
-            <li class="dictionary__item">
-              <span class="dictionary__key"> Получатель </span>
-              <span class="dictionary__value">
-                Иванова Василиса Алексеевна
-              </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key"> Адрес доставки </span>
-              <span class="dictionary__value">
-                Москва, ул. Ленина, 21, кв. 33
-              </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key"> Телефон </span>
-              <span class="dictionary__value"> 8 800 989 74 84 </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key"> Email </span>
-              <span class="dictionary__value"> lalala@mail.ru </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key"> Способ оплаты </span>
-              <span class="dictionary__value"> картой при получении </span>
-            </li>
+            <OrderFormField :data="customerData.name" title="Получатель" />
+            <OrderFormField :data="customerData.address" title="Адрес доставки"/>
+            <OrderFormField :data="customerData.phone" title="Телефон"/>
+            <OrderFormField :data="customerData.email" title="Email"/>
+            <OrderFormField data="картой при получении" title="Способ оплаты"/>
           </ul>
         </div>
 
         <div class="cart__block">
-          <ul class="cart__orders">
-            <li class="cart__order">
-              <h3>Смартфон Xiaomi Redmi Note 7 Pro 6/128GB</h3>
-              <b>18 990 ₽</b>
-              <span>Артикул: 150030</span>
-            </li>
-            <li class="cart__order">
-              <h3>Гироскутер Razor Hovertrax 2.0ii</h3>
-              <b>4 990 ₽</b>
-              <span>Артикул: 150030</span>
-            </li>
-            <li class="cart__order">
-              <h3>Электрический дрифт-карт Razor Lil’ Crazy</h3>
-              <b>8 990 ₽</b>
-              <span>Артикул: 150030</span>
-            </li>
+          <ul v-for="item in orderItems" :key="item.product.id" class="cart__orders">
+            <OrderProduct :id="item.product.id" :price="numberFormat(item.product.price)"
+            :title="item.product.title" />
           </ul>
 
           <div class="cart__total">
             <p>Доставка: <b>500 ₽</b></p>
-            <p>Итого: <b>3</b> товара на сумму <b>37 970 ₽</b></p>
+            <p>Итого: <b>{{totalOrderAmount}}</b> товара на сумму <b>
+              {{numberFormat(totalOrderPrice)}} ₽</b></p>
           </div>
         </div>
       </form>
@@ -88,14 +58,23 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 import { API_BASE_URL } from '@/config';
+import numberFormat from '@/helpers/numberFormat';
+import OrderFormField from '@/components/OrderFormField.vue';
+import OrderProduct from '@/components/OrderProduct.vue';
 
 export default {
   data() {
     return {
     };
   },
+  components: {
+    OrderFormField,
+    OrderProduct,
+  },
   methods: {
+    numberFormat,
     loadOrdersData() {
       axios
         .get(`${API_BASE_URL}/api/orders/${this.$route.params.id}`, {
@@ -109,14 +88,13 @@ export default {
     },
   },
   computed: {
-    orderData() {
-      return this.$store.state.orderInfo;
-    },
+    ...mapGetters(['orderItems', 'customerData', 'totalOrderAmount', 'totalOrderPrice']),
   },
   watch: {
     '$route.params.id': {
       handler() {
-        if (this.$store.state.orderInfo && this.$store.state.orderInfo === this.$route.params.id) {
+        if (this.$store.state.orderInfo
+        && this.$store.state.orderInfo.id === this.$route.params.id) {
           return;
         }
         this.loadOrdersData();

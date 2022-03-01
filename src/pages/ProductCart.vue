@@ -38,7 +38,8 @@
             Итого: <span>{{ numberFormat(totalPrice) }} ₽</span>
           </p>
 
-          <router-link :to="{name: 'order'}" class="cart__button button button--primery"
+          <router-link v-if="totalAmount" :to="{name: 'order'}"
+          class="cart__button button button--primery"
            type="submit">
             Оформить заказ
           </router-link>
@@ -55,11 +56,6 @@ import numberFormat from '@/helpers/numberFormat';
 import CartItem from '@/components/CartItem.vue';
 
 export default {
-  data() {
-    return {
-
-    };
-  },
   components: {
     CartItem,
   },

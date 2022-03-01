@@ -9,7 +9,7 @@ export default createStore({
     ],
     cartAccessKey: null,
     cartProductsData: [],
-    orderInfo: null,
+    orderInfo: {},
   },
   mutations: {
     setOrderInfo(state, orderInfo) {
@@ -68,6 +68,25 @@ export default createStore({
     },
   },
   getters: {
+    orderItems(state) {
+      return state.orderInfo.basket?.items || [];
+    },
+    customerData(state) {
+      return {
+        id: state.orderInfo.id,
+        name: state.orderInfo.name,
+        phone: state.orderInfo.phone,
+        email: state.orderInfo.email,
+        comment: state.orderInfo.comment,
+        address: state.orderInfo.address,
+      } || {};
+    },
+    totalOrderAmount(state, getters) {
+      return getters.orderItems?.length || 0;
+    },
+    totalOrderPrice(state) {
+      return state.orderInfo?.totalPrice || 0;
+    },
     CartDetailedProducts(state) {
       return state.cartProducts.map((item) => {
         const { product } = state.cartProductsData.find((p) => item.productID === p.product.id);

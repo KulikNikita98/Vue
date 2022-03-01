@@ -56,7 +56,7 @@
             <ul class="cart__options options">
               <li class="options__item">
                 <label class="options__label">
-                  <input class="options__radio sr-only" type="radio"
+                  <input class="options__radio sr-only" v-model="formData.delivery" type="radio"
                    name="delivery" value="0" checked="">
                   <span class="options__value">
                     Самовывоз <b>бесплатно</b>
@@ -65,7 +65,8 @@
               </li>
               <li class="options__item">
                 <label class="options__label">
-                  <input class="options__radio sr-only" type="radio" name="delivery" value="500">
+                  <input class="options__radio sr-only" v-model="formData.delivery"
+                  type="radio" name="delivery" value="500">
                   <span class="options__value">
                     Курьером <b>500 ₽</b>
                   </span>
@@ -77,7 +78,8 @@
             <ul class="cart__options options">
               <li class="options__item">
                 <label class="options__label">
-                  <input class="options__radio sr-only" type="radio" name="pay" value="card">
+                  <input class="options__radio sr-only" v-model="formData.pay"
+                  type="radio" name="pay" value="card">
                   <span class="options__value">
                     Картой при получении
                   </span>
@@ -85,7 +87,8 @@
               </li>
               <li class="options__item">
                 <label class="options__label">
-                  <input class="options__radio sr-only" type="radio" name="pay" value="cash">
+                  <input class="options__radio sr-only" v-model="formData.pay"
+                  type="radio" name="pay" checked value="cash">
                   <span class="options__value">
                     Наличными при получении
                   </span>
@@ -106,7 +109,7 @@
           </ul>
 
           <div class="cart__total">
-            <p>Доставка: <b>500 ₽</b></p>
+            <p>Доставка: <b>{{formData.delivery}} ₽</b></p>
             <p>Итого: <b>{{ numberFormat(totalAmount) }}</b>
             товара на сумму <b> {{numberFormat(totalPrice) }} ₽</b></p>
           </div>
@@ -122,6 +125,7 @@
             Похоже произошла ошибка. Попробуйте отправить снова или перезагрузите страницу.
           </p>
         </div>
+        <div v-if="isDataSending">Заявка отправляется. Подождите немного...</div>
       </form>
     </section>
   </main>
@@ -130,7 +134,7 @@
 <script>
 
 import axios from 'axios';
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters } from 'vuex';
 import numberFormat from '@/helpers/numberFormat';
 import BaseFormText from '@/components/BaseFormText.vue';
 import BaseFormTextarea from '@/components/BaseFormTextarea.vue';
@@ -139,9 +143,13 @@ import { API_BASE_URL } from '@/config';
 export default {
   data() {
     return {
-      formData: { },
+      formData: {
+        delivery: 500,
+        pay: 'cash',
+      },
       formError: { },
       formErrorMessage: '',
+      isDataSending: false,
     };
   },
   components: {
@@ -156,13 +164,11 @@ export default {
     }),
   },
   methods: {
-    ...mapActions({
-      loadCartProducts: 'loadCart',
-    }),
     numberFormat,
     sendOrder() {
       this.formError = {};
       this.formErrorMessage = '';
+      this.isDataSending = true;
       axios.post(`${API_BASE_URL}/api/orders`, {
         ...this.formData,
       }, {
@@ -179,11 +185,12 @@ export default {
         .catch((error) => {
           this.formError = error.response.data.error.request || {};
           this.formErrorMessage = error.response.data.error;
+        })
+        .then(() => {
+          this.isDataSending = false;
         });
     },
   },
-  created() {
-    this.loadCartProducts();
-  },
+
 };
 </script>
