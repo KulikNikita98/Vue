@@ -6,6 +6,7 @@ import NotFoundPage from '@/pages/NotFoundPage.vue';
 import ProductCart from '@/pages/ProductCart.vue';
 import OrderPage from '@/pages/OrderPage.vue';
 import OrderInfoPage from '@/pages/OrderInfoPage.vue';
+import config from '../../vue.config';
 
 const routes = [
 
@@ -46,7 +47,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(config.publicPath),
   routes,
 });
 
