@@ -16,7 +16,7 @@
  git commit  -m 'deploy'
  git remote add origin https://github.com/KulikNikita98/vue-app.git
  git branch -m main
- git push -u origin main:gh-pages
+ git push -u -f origin main:gh-pages
 
 
 

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 import MainPage from '@/pages/MainPage.vue';
 import ProductPage from '@/pages/ProductPage.vue';
@@ -6,7 +6,7 @@ import NotFoundPage from '@/pages/NotFoundPage.vue';
 import ProductCart from '@/pages/ProductCart.vue';
 import OrderPage from '@/pages/OrderPage.vue';
 import OrderInfoPage from '@/pages/OrderInfoPage.vue';
-import config from '../../vue.config';
+// import config from '../../vue.config';
 
 const routes = [
 
@@ -47,7 +47,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(config.publicPath),
+  history: createWebHashHistory(),
   routes,
 });
 

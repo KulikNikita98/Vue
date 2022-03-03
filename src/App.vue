@@ -1,5 +1,4 @@
 <template>
-  <div>
       <header class="header">
     <div class="header__wrapper container">
       <span class="header__info">Каталог</span>
@@ -111,8 +110,7 @@
       </span>
     </div>
   </footer>
-  </div>
-
+ <div  id="teleport-target"></div>
 </template>
 
 <script>

@@ -1,8 +1,8 @@
 <template>
-    <main class="content container"
-    v-if="isProductLoading">Подождите, идет загрузка товара...</main>
-    <main class="content container" v-else-if="isLoadingFailed">Не удалось загрузить товар</main>
-  <main class="content container" v-else>
+    <div class=""
+    v-if="isProductLoading">Подождите, идет загрузка товара...</div>
+    <div class="" v-else-if="isLoadingFailed">Не удалось загрузить товар</div>
+  <div class="" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -140,19 +140,27 @@
         </div>
       </div>
     </section>
-  </main>
+  </div>
 
 </template>
+
+<style scoped>
+
+</style>
 
 <script>
 import axios from 'axios';
 import { mapActions } from 'vuex';
 import { API_BASE_URL } from '@/config';
 import numberFormat from '@/helpers/numberFormat';
+
 import BaseModal from '@/components/BaseModal.vue';
 import ProductCounter from '@/components/ProductCounter.vue';
 
 export default {
+  props: {
+    productId: { type: [Number, String], reqired: true },
+  },
   data() {
     return {
       productAmount: 1,
@@ -200,7 +208,7 @@ export default {
     loadProduct() {
       this.isLoadingFailed = false;
       this.isProductLoading = true;
-      axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
+      axios.get(`${API_BASE_URL}/api/products/${this.productId}`)
         // eslint-disable-next-line no-return-assign
         .then((response) => this.productsData = response.data)
         // eslint-disable-next-line no-return-assign
