@@ -1,7 +1,8 @@
 <template>
     <main class="content container"
-    v-if="isProductLoading">Подождите, идет загрузка товара...</main>
-    <main class="content container" v-else-if="isLoadingFailed">Не удалось загрузить товар</main>
+    v-if="status.isProductLoading">Подождите, идет загрузка товара...</main>
+    <main class="content container"
+    v-else-if="status.isLoadingFailed">Не удалось загрузить товар</main>
   <main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
@@ -37,9 +38,9 @@
           {{product.title}}
         </h2>
         <div class="item__form">
-          <form class="form" @submit.prevent="addToCart()" action="#" method="POST">
+          <form class="form" @submit.prevent="doAddToCart()" action="#" method="POST">
             <b class="item__price">
-              {{ formattedNumber }} ₽
+              {{ product.formattedNumber }} ₽
             </b>
 
             <fieldset class="form__block">
@@ -145,76 +146,134 @@
 </template>
 
 <script>
-import axios from 'axios';
-import { mapActions } from 'vuex';
-import { API_BASE_URL } from '@/config';
-import numberFormat from '@/helpers/numberFormat';
+
+import {
+  defineComponent,
+  ref,
+} from 'vue';
+import {
+  // onBeforeRouteUpdate,
+  useRoute,
+} from 'vue-router';
+import {
+  // mapActions,
+  useStore,
+} from 'vuex';
+
 import BaseModal from '@/components/BaseModal.vue';
 import ProductCounter from '@/components/ProductCounter.vue';
+import useProduct from '@/hooks/useProduct';
 
-export default {
-  data() {
-    return {
-      productAmount: 1,
-      currentColor: this.$route.params.color,
-      productsData: null,
-      isLoadingFailed: false,
-      isProductLoading: false,
-      isProductAdded: false,
-      isProductAdding: false,
-    };
-  },
+export default defineComponent({
   components: {
     ProductCounter,
     BaseModal,
   },
+  setup() {
+    const $store = useStore();
+    const $route = useRoute();
+    const {
+      product,
+      color,
+      fetchProduct,
+      status,
+    } = useProduct();
 
-  computed: {
-    product() {
-      return this.productsData ? {
-        ...this.productsData,
-        img: this.productsData.image.file.url,
-      } : {};
-    },
-    formattedNumber() {
-      return numberFormat(this.product.price);
-    },
-  },
-  methods: {
-    ...mapActions(['addProductToCart']),
-    numberFormat,
-    addToCart() {
-      this.isProductAdded = false;
-      this.isProductAdding = true;
-      if (this.productAmount < 1) {
+    const productAmount = ref(1);
+    const isProductAdded = ref(false);
+    const isProductAdding = ref(false);
+
+    const doAddToCart = () => {
+      isProductAdded.value = false;
+      isProductAdding.value = true;
+      if (productAmount.value < 1) {
         return;
       }
-      this.addProductToCart(
-        { productID: this.product.id, amount: this.productAmount },
-      )
+      $store.dispatch('addProductToCart',
+        { productID: product.value.id, amount: productAmount.value })
         .then(() => {
-          this.isProductAdded = true;
-          this.isProductAdding = false;
+          isProductAdded.value = true;
+          isProductAdding.value = false;
         });
-    },
-    loadProduct() {
-      this.isLoadingFailed = false;
-      this.isProductLoading = true;
-      axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
-        // eslint-disable-next-line no-return-assign
-        .then((response) => this.productsData = response.data)
-        // eslint-disable-next-line no-return-assign
-        .catch(() => this.isLoadingFailed = true)
-        // eslint-disable-next-line no-return-assign
-        .then(() => this.isProductLoading = false);
-    },
-  },
-  created() {
-    this.loadProduct();
-  },
-  beforeRouteUpdate() {
-    this.loadProduct();
-  },
+    };
 
-};
+    fetchProduct($route.params.id);
+
+    return {
+      doAddToCart,
+      productAmount,
+      currentColor: color,
+      isProductAdded,
+      isProductAdding,
+      product,
+      status,
+    };
+  },
+});
+
+// export default {
+//   data() {
+//     return {
+//       productAmount: 1,
+//       currentColor: this.$route.params.color,
+//       productsData: null,
+//       isLoadingFailed: false,
+//       isProductLoading: false,
+//       isProductAdded: false,
+//       isProductAdding: false,
+//     };
+//   },
+//   components: {
+//     ProductCounter,
+//     BaseModal,
+//   },
+
+//   computed: {
+//     product() {
+//       return this.productsData ? {
+//         ...this.productsData,
+//         img: this.productsData.image.file.url,
+//       } : {};
+//     },
+//     formattedNumber() {
+//       return doNumberFormat(this.product.price);
+//     },
+//   },
+//   methods: {
+//     ...mapActions(['addProductToCart']),
+//     doNumberFormat,
+//     addToCart() {
+//       this.isProductAdded = false;
+//       this.isProductAdding = true;
+//       if (this.productAmount < 1) {
+//         return;
+//       }
+//       this.addProductToCart(
+//         { productID: this.product.id, amount: this.productAmount },
+//       )
+//         .then(() => {
+//           this.isProductAdded = true;
+//           this.isProductAdding = false;
+//         });
+//     },
+//     loadProduct() {
+//       this.isLoadingFailed = false;
+//       this.isProductLoading = true;
+//       axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
+//         // eslint-disable-next-line no-return-assign
+//         .then((response) => this.productsData = response.data)
+//         // eslint-disable-next-line no-return-assign
+//         .catch(() => this.isLoadingFailed = true)
+//         // eslint-disable-next-line no-return-assign
+//         .then(() => this.isProductLoading = false);
+//     },
+//   },
+//   created() {
+//     this.loadProduct();
+//   },
+//   beforeRouteUpdate() {
+//     this.loadProduct();
+//   },
+
+// };
 </script>

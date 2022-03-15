@@ -16,7 +16,7 @@
 
     </div>
   </header>
- <router-view />
+ <router-view :key="$route.params.id" />
 
    <footer class="footer">
     <div class="footer__wrapper container">
