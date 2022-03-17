@@ -152,11 +152,9 @@ import {
   ref,
 } from 'vue';
 import {
-  // onBeforeRouteUpdate,
   useRoute,
 } from 'vue-router';
 import {
-  // mapActions,
   useStore,
 } from 'vuex';
 
@@ -211,69 +209,4 @@ export default defineComponent({
   },
 });
 
-// export default {
-//   data() {
-//     return {
-//       productAmount: 1,
-//       currentColor: this.$route.params.color,
-//       productsData: null,
-//       isLoadingFailed: false,
-//       isProductLoading: false,
-//       isProductAdded: false,
-//       isProductAdding: false,
-//     };
-//   },
-//   components: {
-//     ProductCounter,
-//     BaseModal,
-//   },
-
-//   computed: {
-//     product() {
-//       return this.productsData ? {
-//         ...this.productsData,
-//         img: this.productsData.image.file.url,
-//       } : {};
-//     },
-//     formattedNumber() {
-//       return doNumberFormat(this.product.price);
-//     },
-//   },
-//   methods: {
-//     ...mapActions(['addProductToCart']),
-//     doNumberFormat,
-//     addToCart() {
-//       this.isProductAdded = false;
-//       this.isProductAdding = true;
-//       if (this.productAmount < 1) {
-//         return;
-//       }
-//       this.addProductToCart(
-//         { productID: this.product.id, amount: this.productAmount },
-//       )
-//         .then(() => {
-//           this.isProductAdded = true;
-//           this.isProductAdding = false;
-//         });
-//     },
-//     loadProduct() {
-//       this.isLoadingFailed = false;
-//       this.isProductLoading = true;
-//       axios.get(`${API_BASE_URL}/api/products/${this.$route.params.id}`)
-//         // eslint-disable-next-line no-return-assign
-//         .then((response) => this.productsData = response.data)
-//         // eslint-disable-next-line no-return-assign
-//         .catch(() => this.isLoadingFailed = true)
-//         // eslint-disable-next-line no-return-assign
-//         .then(() => this.isProductLoading = false);
-//     },
-//   },
-//   created() {
-//     this.loadProduct();
-//   },
-//   beforeRouteUpdate() {
-//     this.loadProduct();
-//   },
-
-// };
 </script>

@@ -2,8 +2,8 @@
   <Teleport v-if="isOpen" to="#teleport-target">
     <div class="teleport-blackout"></div>
     <div class="teleport-modal" @click="onOutsideClick">
-      <div ref="content" class="teleport-modal__content" >
-        <button @click="closeModal" class="teleport-modal__close">X</button>
+      <div ref="contentElement" class="teleport-modal__content">
+        <button @click="doCloseModal" class="teleport-modal__close">X</button>
         <slot></slot>
       </div>
     </div>
@@ -54,53 +54,40 @@
 </style>
 
 <script>
+import { defineComponent, ref, watch } from 'vue';
+import useModal from '@/hooks/useModal';
 
-let openedCount = 0;
-let atleastOneOpen = null;
-
-export default {
+export default defineComponent({
   props: {
     isOpen: { type: Boolean },
   },
-  methods: {
-    closeModal() {
-      this.$emit('update:isOpen', false);
-    },
-    onOutsideClick($event) {
-      if ($event.target !== this.$refs.content && $event.target.contains(this.$refs.content)) {
-        this.$emit('update:isOpen', false);
+  setup(props, { emit: $emit }) {
+    const contentElement = ref(null);
+    const { doOpen, doClose } = useModal();
+    const doCloseModal = () => {
+      $emit('update:isOpen', false);
+    };
+
+    const onOutsideClick = ($event) => {
+      if ($event.target !== contentElement.value && $event.target.contains(contentElement.value)) {
+        doCloseModal();
       }
-    },
-    checkBlackoutState() {
-      if (!openedCount) {
-        atleastOneOpen = false;
-        document.body.style.overflow = null;
-        document.body.style.paddingRight = null;
-      } else if (!atleastOneOpen && openedCount === 1) {
-        atleastOneOpen = true;
-        document.body.style.paddingRight = `${window.innerWidth
-        - document.documentElement.clientWidth}px`;
-        document.body.style.overflow = 'hidden';
+    };
+
+    watch(props.isOpen, (isOpen) => {
+      if (isOpen) {
+        doOpen();
+      } else {
+        doClose();
       }
-    },
+    }, { immediate: true });
+
+    return {
+      doCloseModal,
+      onOutsideClick,
+      contentElement,
+    };
   },
-  watch: {
-    isOpen: {
-      handler(open) {
-        if (open) {
-          openedCount += 1;
-        } else {
-          openedCount -= 1;
-        }
-        this.checkBlackoutState();
-      },
-    },
-  },
-  created() {
-    if (this.isOpen) {
-      openedCount += 1;
-      this.checkBlackoutState();
-    }
-  },
-};
+
+});
 </script>
